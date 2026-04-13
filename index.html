@@ -851,7 +851,7 @@ async function doSignIn() {
   btn.disabled = false; btn.textContent = 'Sign in';
   if (error) { document.getElementById('authErr').textContent = error.message; }
 }
-document.getElementById('authModal').addEventListener('click', e => { if (e.target === document.getElementById('authModal')) closeAuthModal(); });
+document.addEventListener('click', e => { if (e.target && e.target.id === 'authModal') closeAuthModal(); });
 initAuth();
 </script>
 
