@@ -722,7 +722,8 @@ function showT(){
 }
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function fmt(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<strong style="color:var(--parchment)">$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/^#{1,3}\s+(.+)$/gm,'<strong style="color:var(--gold);display:block;margin-top:10px">$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');}
-async function send(){
+  let freeCount = 0;
+  async function send(){
   if(loading||!country)return;
   const inp=document.getElementById('userInput'),txt=inp.value.trim();if(!txt)return;
   inp.value='';inp.style.height='auto';loading=true;document.getElementById('sendBtn').disabled=true;
@@ -766,7 +767,7 @@ Close your response with a brief note that this is general legal information and
   loading=false;document.getElementById('sendBtn').disabled=false;
 }
 
-let freeCount = 0;
+
 
 function showPaywall(){
   // Remove existing paywall if any
