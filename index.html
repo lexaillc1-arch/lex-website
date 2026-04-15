@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEX — AI Legal Information Assistant</title>
+<meta name="description" content="LEX is an AI-powered legal information assistant covering 15+ countries. Get instant answers to legal questions for $12/month. Legal information, not legal advice.">
+<link rel="canonical" href="https://trylex.app">
+<meta property="og:type" content="website">
+<meta property="og:title" content="LEX — AI Legal Information Assistant">
+<meta property="og:description" content="Instant answers to legal questions covering 15+ countries. $12/month. Legal information, not legal advice.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@LexAI_Legal">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231a2744'/><rect width='32' height='3' fill='%23c9a84c'/><text x='16' y='24' font-family='Georgia,serif' font-size='18' font-weight='bold' fill='%23f5f0e8' text-anchor='middle'>L</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--midnight:#0e1829;--navy:#1a2744;--gold:#c9a84c;--gold-light:#e8c97a;--parchment:#f5f0e8;--steel:#8a9ab8;--steel-light:#b0bdd4;--success:#4ade80}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--midnight);color:var(--parchment);overflow-x:hidden}
+nav{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;align-items:center;justify-content:space-between;padding:12px 40px;background:rgba(14,24,41,.97);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,.15)}
+@media(max-width:600px){nav{padding:11px 16px}}
+.nav-logo{display:flex;align-items:center;gap:9px;text-decoration:none}
+.nav-lm{width:32px;height:32px;background:var(--navy);border-radius:8px;display:flex;align-items:center;justify-content:center;border-top:2px solid var(--gold);flex-shrink:0}
+.nav-lm span{font-family:'Playfair Display',serif;font-size:14px;color:var(--parchment);font-weight:900}
+.nav-name{font-family:'Playfair Display',serif;font-size:17px;color:var(--parchment);font-weight:700;letter-spacing:.04em}
+.nav-r{display:flex;align-items:center;gap:16px}
+.nav-links{display:flex;gap:22px}
+@media(max-width:700px){.nav-links{display:none}}
+.nav-links a{color:var(--steel);font-size:13px;text-decoration:none;transition:color .2s;cursor:pointer}
+.nav-links a:hover{color:var(--gold)}
+.nav-cta{background:var(--gold);color:var(--midnight);padding:8px 18px;border-radius:100px;font-size:13px;font-weight:500;border:none;cursor:pointer;text-decoration:none;transition:all .2s;white-space:nowrap}
+.nav-cta:hover{background:var(--gold-light)}
+.hamburger{display:none;background:transparent;border:1px solid rgba(138,154,184,.3);border-radius:7px;padding:7px 9px;cursor:pointer;color:var(--steel);font-size:11px;align-items:center;gap:5px}
+@media(max-width:700px){.hamburger{display:flex}}
+.mob-menu{display:none;position:fixed;top:56px;left:0;right:0;background:rgba(10,18,30,.98);border-bottom:1px solid rgba(201,168,76,.12);z-index:299;flex-direction:column}
+.mob-menu.open{display:flex}
+.mob-menu a{color:var(--parchment);text-decoration:none;font-size:15px;padding:14px 20px;border-bottom:1px solid rgba(138,154,184,.08);cursor:pointer;transition:color .2s}
+.mob-menu a:hover{color:var(--gold)}
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:108px 20px 68px;position:relative;overflow:hidden}
+.hero-grid{position:absolute;inset:0;opacity:.04;background-image:linear-gradient(var(--gold) 1px,transparent 1px),linear-gradient(90deg,var(--gold) 1px,transparent 1px);background-size:44px 44px}
+.hero-glow{position:absolute;top:20%;left:50%;transform:translateX(-50%);width:600px;height:260px;background:radial-gradient(ellipse,rgba(201,168,76,.06),transparent 70%);pointer-events:none}
+.hero-content{position:relative;max-width:780px;width:100%}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);color:var(--gold);padding:6px 16px;border-radius:100px;font-size:11px;letter-spacing:.1em;margin-bottom:24px;text-transform:uppercase}
+.bdot{width:6px;height:6px;background:var(--gold);border-radius:50%;animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.5)}}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(36px,7vw,80px);font-weight:900;line-height:1.07;letter-spacing:-.02em;margin-bottom:20px}
+.hero h1 em{color:var(--gold);font-style:normal}
+.hero p{font-size:clamp(14px,2.5vw,17px);color:var(--steel-light);line-height:1.72;margin-bottom:34px;max-width:540px;margin-left:auto;margin-right:auto}
+.hero-btns{display:flex;gap:11px;justify-content:center;flex-wrap:wrap}
+.btn-p{background:var(--gold);color:var(--midnight);padding:13px 28px;border-radius:100px;font-size:14px;font-weight:500;border:none;cursor:pointer;transition:all .2s;text-decoration:none;font-family:'DM Sans',sans-serif;display:inline-block}
+.btn-p:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 10px 30px rgba(201,168,76,.27)}
+.btn-o{background:transparent;color:var(--parchment);padding:13px 28px;border-radius:100px;font-size:14px;border:1px solid rgba(245,240,232,.2);cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block}
+.btn-o:hover{border-color:var(--parchment)}
+.hero-stats{display:flex;gap:40px;justify-content:center;margin-top:52px;flex-wrap:wrap}
+.sn{font-family:'Playfair Display',serif;font-size:33px;font-weight:900;color:var(--gold)}
+.sl{font-size:11px;color:var(--steel);margin-top:2px}
+.hero-disc{margin-top:22px;font-size:11px;color:rgba(138,154,184,.45)}
+.app-sec{padding:70px 20px;max-width:1140px;margin:0 auto}
+.ey{font-size:11px;color:var(--gold);letter-spacing:.14em;text-transform:uppercase;margin-bottom:11px}
+.st{font-family:'Playfair Display',serif;font-size:clamp(25px,4vw,42px);font-weight:900;margin-bottom:10px;line-height:1.2}
+.ss{font-size:14px;color:var(--steel-light);line-height:1.7;max-width:480px;margin-bottom:42px}
+.app-layout{display:grid;grid-template-columns:268px 1fr;gap:17px;align-items:start}
+@media(max-width:840px){.app-layout{grid-template-columns:1fr}}
+.sidebar{display:flex;flex-direction:column;gap:11px}
+@media(max-width:840px){.sidebar{display:grid;grid-template-columns:1fr 1fr;gap:9px}}
+@media(max-width:520px){.sidebar{grid-template-columns:1fr}}
+.sbl{font-size:10px;color:var(--steel);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;padding:0 2px}
+.exp-card{background:linear-gradient(135deg,rgba(26,39,68,.96),rgba(14,24,41,.92));border:1px solid rgba(201,168,76,.19);border-radius:13px;padding:13px}
+@media(max-width:840px){.exp-card{grid-column:1/-1}}
+.exp-hd{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.exp-av{width:35px;height:35px;background:var(--navy);border-radius:8px;display:flex;align-items:center;justify-content:center;border:1px solid var(--gold);flex-shrink:0}
+.exp-av span{font-family:'Playfair Display',serif;font-size:15px;font-weight:900;color:var(--parchment)}
+.exp-nm{font-size:12px;font-weight:500;color:var(--parchment)}
+.exp-cr{font-size:10px;color:var(--gold);line-height:1.35}
+.exp-tags{display:flex;flex-wrap:wrap;gap:4px}
+.etag{font-size:10px;background:rgba(138,154,184,.09);color:var(--steel-light);padding:2px 7px;border-radius:100px;border:1px solid rgba(138,154,184,.12)}
+.cbox,.pbox{background:var(--navy);border:1px solid rgba(138,154,184,.15);border-radius:13px;padding:11px}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:3px;max-height:215px;overflow-y:auto}
+.cgrid::-webkit-scrollbar{width:3px}
+.cgrid::-webkit-scrollbar-thumb{background:rgba(138,154,184,.18);border-radius:3px}
+.cbtn{display:flex;align-items:center;gap:5px;padding:5px 7px;border-radius:7px;border:1px solid transparent;background:transparent;cursor:pointer;transition:all .15s;text-align:left;font-family:'DM Sans',sans-serif;width:100%}
+.cbtn:hover{background:rgba(201,168,76,.07);border-color:rgba(201,168,76,.17)}
+.cbtn.active{background:rgba(201,168,76,.11);border-color:var(--gold)}
+.cflag{font-size:13px;line-height:1;flex-shrink:0}
+.cname{font-size:10px;color:var(--parchment);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pbtn{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:8px;border:1px solid transparent;background:transparent;cursor:pointer;transition:all .14s;width:100%;text-align:left;margin-bottom:2px;font-family:'DM Sans',sans-serif}
+.pbtn:hover{background:rgba(201,168,76,.06);border-color:rgba(201,168,76,.12)}
+.pbtn.active{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.26)}
+.pico{font-size:13px;width:15px;text-align:center;flex-shrink:0}
+.pt{font-size:11px;font-weight:500;color:var(--parchment)}
+.ps{font-size:10px;color:var(--steel)}
+.chat-win{background:var(--navy);border-radius:17px;border:1px solid rgba(201,168,76,.13);overflow:hidden;display:flex;flex-direction:column;height:640px}
+@media(max-width:840px){.chat-win{height:500px}}
+.chat-hd{background:rgba(14,24,41,.88);padding:11px 14px;border-bottom:1px solid rgba(138,154,184,.09);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px}
+.chl{display:flex;align-items:center;gap:8px}
+.chav{width:30px;height:30px;background:var(--navy);border-radius:7px;display:flex;align-items:center;justify-content:center;border:1px solid var(--gold);flex-shrink:0}
+.chav span{font-family:'Playfair Display',serif;font-size:13px;color:var(--parchment);font-weight:900}
+.chn{font-size:12px;font-weight:500;color:var(--parchment)}
+.chs{font-size:10px;color:var(--steel);display:flex;align-items:center;gap:3px;margin-top:1px}
+.sdot{width:5px;height:5px;background:var(--success);border-radius:50%}
+.ctx{display:flex;align-items:center;gap:4px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.16);border-radius:100px;padding:3px 9px;font-size:10px;color:var(--gold);white-space:nowrap;max-width:150px;overflow:hidden}
+.chat-msgs{flex:1;overflow-y:auto;padding:13px;display:flex;flex-direction:column;gap:10px}
+.chat-msgs::-webkit-scrollbar{width:3px}
+.chat-msgs::-webkit-scrollbar-thumb{background:rgba(138,154,184,.16);border-radius:3px}
+.msg{max-width:92%}
+.msg-ai{align-self:flex-start}
+.msg-user{align-self:flex-end}
+.mlbl{font-size:10px;color:var(--steel);margin-bottom:3px}
+.mbub{padding:10px 13px;border-radius:14px;font-size:13px;line-height:1.65}
+.msg-ai .mbub{background:rgba(14,24,41,.83);color:var(--steel-light);border-radius:4px 14px 14px 14px}
+.msg-user .mbub{background:var(--gold);color:var(--midnight);font-weight:500;border-radius:14px 14px 4px 14px}
+.mdisc{margin-top:5px;font-size:10px;color:rgba(138,154,184,.5);font-style:italic}
+.twrap{align-self:flex-start}
+.tbub{background:rgba(14,24,41,.83);border-radius:4px 14px 14px 14px;padding:10px 13px;display:flex;align-items:center;gap:4px}
+.td{width:6px;height:6px;background:var(--steel);border-radius:50%;animation:td 1.3s infinite}
+.td:nth-child(2){animation-delay:.2s}
+.td:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,60%,100%{transform:translateY(0);opacity:.35}30%{transform:translateY(-7px);opacity:1}}
+.sugg-area{padding:8px 11px;border-top:1px solid rgba(138,154,184,.07);flex-shrink:0}
+.slbl{font-size:9px;color:var(--steel);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+.srow{display:flex;gap:5px;flex-wrap:wrap}
+.sbtn{background:rgba(26,39,68,.9);border:1px solid rgba(138,154,184,.16);border-radius:100px;padding:4px 10px;font-size:11px;color:var(--steel-light);cursor:pointer;transition:all .14s;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.sbtn:hover{border-color:var(--gold);color:var(--gold)}
+.cin-area{padding:10px 11px;border-top:1px solid rgba(138,154,184,.08);display:flex;gap:7px;align-items:flex-end;flex-shrink:0}
+.cin{flex:1;background:rgba(14,24,41,.78);border:1px solid rgba(138,154,184,.15);border-radius:11px;padding:9px 13px;color:var(--parchment);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;resize:none;min-height:40px;max-height:96px;transition:border .2s;line-height:1.5}
+.cin:focus{border-color:rgba(201,168,76,.4)}
+.cin::placeholder{color:var(--steel)}
+.snd{width:40px;height:40px;background:var(--gold);border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.snd:hover{background:var(--gold-light);transform:scale(1.05)}
+.snd:disabled{opacity:.33;cursor:not-allowed;transform:none}
+.feat-sec{padding:70px 20px;background:rgba(26,39,68,.17)}
+.feat-in{max-width:1140px;margin:0 auto}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:13px;margin-top:42px}
+.fc{background:var(--navy);border-radius:13px;padding:21px;border:1px solid rgba(138,154,184,.09);transition:all .2s}
+.fc:hover{border-color:rgba(201,168,76,.26);transform:translateY(-3px)}
+.fn{font-family:'Playfair Display',serif;font-size:12px;color:rgba(201,168,76,.42);margin-bottom:10px}
+.ftitle{font-size:14px;font-weight:500;color:var(--parchment);margin-bottom:7px}
+.fd{font-size:12.5px;color:var(--steel-light);line-height:1.6}
+.price-sec{padding:70px 20px;max-width:1140px;margin:0 auto}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:13px;margin-top:42px}
+.pc{background:var(--navy);border-radius:17px;padding:25px 21px;border:1px solid rgba(138,154,184,.09);position:relative;transition:all .2s}
+.pc:hover{transform:translateY(-4px)}
+.pc.feat{border-color:var(--gold)}
+.pc.feat::before{content:'Most Popular';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--midnight);font-size:10px;font-weight:700;padding:3px 12px;border-radius:100px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.ptier{font-size:10px;color:var(--steel);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+.pamt{font-family:'Playfair Display',serif;font-size:44px;font-weight:900;color:var(--parchment);line-height:1}
+.pamt sup{font-size:18px;vertical-align:top;margin-top:9px;display:inline-block}
+.pper{font-size:11px;color:var(--steel);margin-top:3px;margin-bottom:15px}
+.pdiv{height:1px;background:rgba(138,154,184,.09);margin-bottom:15px}
+.pfeats{display:flex;flex-direction:column;gap:7px}
+.pf{font-size:12.5px;color:var(--steel-light);display:flex;gap:7px;align-items:flex-start}
+.pck{color:var(--gold);flex-shrink:0}
+.pbtn2{width:100%;margin-top:20px;padding:10px;border-radius:100px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;text-align:center;display:block;text-decoration:none}
+.po{background:transparent;color:var(--parchment);border:1px solid rgba(245,240,232,.18)}
+.po:hover{border-color:var(--parchment)}
+.pf2{background:var(--gold);color:var(--midnight);border:none}
+.pf2:hover{background:var(--gold-light)}
+.ctry-sec{padding:52px 20px;text-align:center;background:rgba(26,39,68,.11)}
+.ctry-in{max-width:820px;margin:0 auto}
+.ctry-row{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:26px}
+.cpill{display:flex;align-items:center;gap:5px;background:var(--navy);border:1px solid rgba(138,154,184,.16);border-radius:100px;padding:6px 12px;font-size:12px;color:var(--parchment)}
+.cta-sec{padding:76px 20px;text-align:center;border-top:1px solid rgba(201,168,76,.07)}
+.cta-sec h2{font-family:'Playfair Display',serif;font-size:clamp(23px,4vw,44px);font-weight:900;margin-bottom:13px}
+.cta-sec p{font-size:14px;color:var(--steel-light);margin-bottom:26px}
+footer{background:rgba(9,15,24,.85);border-top:1px solid rgba(138,154,184,.09);padding:40px 20px 26px}
+.fi{max-width:1080px;margin:0 auto}
+.f-top{display:grid;grid-template-columns:1fr repeat(3,auto);gap:28px;margin-bottom:28px}
+@media(max-width:660px){.f-top{grid-template-columns:1fr 1fr}}
+@media(max-width:380px){.f-top{grid-template-columns:1fr}}
+.fb .fl{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.fbm{width:25px;height:25px;background:var(--navy);border-radius:5px;display:flex;align-items:center;justify-content:center;border-top:1.5px solid var(--gold)}
+.fbm span{font-family:'Playfair Display',serif;font-size:11px;color:var(--parchment);font-weight:900}
+.fbn{font-family:'Playfair Display',serif;font-size:14px;color:var(--parchment);font-weight:700}
+.fb p{font-size:11.5px;color:var(--steel);line-height:1.6;max-width:190px}
+.flinks h4{font-size:10px;color:var(--steel);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px}
+.flinks a{display:block;font-size:12.5px;color:var(--steel-light);text-decoration:none;margin-bottom:7px;transition:color .2s;cursor:pointer}
+.flinks a:hover{color:var(--gold)}
+.f-bot{border-top:1px solid rgba(138,154,184,.09);padding-top:18px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:flex-start}
+.f-copy{font-size:11px;color:rgba(138,154,184,.42)}
+.f-disc{font-size:11px;color:rgba(138,154,184,.36);line-height:1.65;max-width:560px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:500;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--midnight);border:1px solid rgba(201,168,76,.18);border-radius:15px;max-width:700px;width:100%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-hd{background:rgba(26,39,68,.92);padding:14px 18px;border-bottom:1px solid rgba(138,154,184,.09);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-hd h3{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--parchment)}
+.modal-x{background:transparent;border:1px solid rgba(138,154,184,.22);border-radius:7px;width:30px;height:30px;color:var(--steel);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.modal-x:hover{border-color:var(--gold);color:var(--gold)}
+.modal-tabs{display:flex;border-bottom:1px solid rgba(138,154,184,.1);flex-shrink:0;overflow-x:auto}
+.modal-tabs::-webkit-scrollbar{height:0}
+.mtab{padding:10px 16px;font-size:12.5px;color:var(--steel);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;background:transparent;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.mtab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.modal-body{padding:22px;overflow-y:auto;font-size:13px;color:var(--steel-light);line-height:1.75}
+.modal-body h2{font-size:15px;font-weight:500;color:var(--parchment);margin:22px 0 7px;padding-bottom:6px;border-bottom:1px solid rgba(138,154,184,.1)}
+.modal-body h2:first-child{margin-top:0}
+.modal-body h3{font-size:13.5px;font-weight:500;color:var(--parchment);margin:14px 0 5px}
+.modal-body p{margin-bottom:10px}
+.modal-body ul{padding-left:17px;margin-bottom:10px}
+.modal-body li{margin-bottom:5px}
+.modal-body strong{color:var(--parchment)}
+.warn-box{background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.18);border-radius:8px;padding:12px 15px;margin-bottom:16px;font-size:12.5px;color:rgba(201,168,76,.88)}
+.tc{display:none}
+.tc.active{display:block}
+.meta-row{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:18px;padding:11px 13px;background:rgba(26,39,68,.5);border-radius:8px}
+.mi .ml{font-size:10px;color:var(--steel);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.mi .mv{font-size:12.5px;color:var(--parchment);font-weight:500}
+.auth-inp{width:100%;background:rgba(14,24,41,.8);border:1px solid rgba(138,154,184,.26);border-radius:10px;padding:11px 15px;color:var(--parchment);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border .2s;margin-bottom:12px;display:block}
+.auth-inp:focus{border-color:var(--gold)}
+.auth-inp::placeholder{color:var(--steel)}
+.auth-btn{width:100%;background:var(--gold);color:var(--midnight);padding:12px;border-radius:100px;font-size:14px;font-weight:500;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-top:4px}
+.auth-btn:hover{background:var(--gold-light)}
+.auth-btn:disabled{opacity:.5;cursor:not-allowed}
+.auth-err{font-size:12px;margin-top:10px;min-height:18px;text-align:center}
+.auth-switch{text-align:center;margin-top:14px;font-size:13px;color:var(--steel)}
+.auth-switch span{color:var(--gold);cursor:pointer;font-weight:500}
+.auth-modal{background:var(--midnight);border:1px solid rgba(201,168,76,.2);border-radius:15px;max-width:400px;width:100%;padding:28px 28px 22px;position:relative}
+.auth-logo{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:18px}
+.auth-lm{width:36px;height:36px;background:var(--navy);border-radius:9px;display:flex;align-items:center;justify-content:center;border-top:2px solid var(--gold)}
+.auth-lm span{font-family:'Playfair Display',serif;font-size:16px;color:var(--parchment);font-weight:900}
+.auth-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--parchment);text-align:center;margin-bottom:5px}
+.auth-sub{font-size:13px;color:var(--steel);text-align:center;margin-bottom:20px}
+.auth-tabs{display:flex;margin-bottom:20px;background:rgba(26,39,68,.6);border-radius:100px;padding:3px}
+.auth-tab{flex:1;padding:8px;border-radius:100px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--steel);font-family:'DM Sans',sans-serif;transition:all .2s}
+.auth-tab.active{background:var(--gold);color:var(--midnight)}
+.nav-user{display:flex;align-items:center;gap:8px}
+.nav-user-email{font-size:12px;color:var(--gold);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-signout{background:transparent;border:1px solid rgba(138,154,184,.25);border-radius:100px;padding:6px 12px;font-size:12px;color:var(--steel);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.nav-signout:hover{border-color:var(--gold);color:var(--gold)}
+.paywall-wrap{padding:16px;flex-shrink:0}
+.paywall{background:linear-gradient(135deg,#0e1829,#1a2744);border:1px solid rgba(201,168,76,.35);border-radius:14px;padding:22px;text-align:center}
+.paywall-icon{font-size:28px;margin-bottom:10px}
+.paywall-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#f5f0e8;margin-bottom:6px}
+.paywall-sub{font-size:13px;color:#8a9ab8;line-height:1.5;margin-bottom:18px}
+.paywall-btns{display:flex;flex-direction:column;gap:9px}
+.paywall-pro{background:#c9a84c;color:#0e1829;padding:12px;border-radius:100px;font-size:14px;font-weight:500;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;text-decoration:none;display:block}
+.paywall-pro:hover{background:#e8c97a}
+.paywall-free{background:transparent;color:#f5f0e8;padding:10px;border-radius:100px;font-size:13px;border:1px solid rgba(245,240,232,.2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.paywall-free:hover{border-color:#f5f0e8}
+.paywall-note{font-size:11px;color:rgba(138,154,184,.45);margin-top:10px}
+</style>
+</head>
+<body>
+
+<div class="mob-menu" id="mobMenu">
+  <a href="#demo" onclick="closeMob()">Try LEX</a>
+  <a href="#features" onclick="closeMob()">Features</a>
+  <a href="#pricing" onclick="closeMob()">Pricing</a>
+  <a onclick="openModal();closeMob()">Terms &amp; Privacy</a>
+  <a onclick="openAuth();closeMob()" style="color:var(--gold)">Sign in / Create account</a>
+</div>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-lm"><span>L</span></div>
+    <span class="nav-name">LEX</span>
+  </a>
+  <div class="nav-r">
+    <div class="nav-links">
+      <a href="#demo">Try LEX</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a onclick="openModal()">Legal</a>
+    </div>
+    <div id="navAuth"><a onclick="openAuth()" class="nav-cta" style="cursor:pointer">Get started</a></div>
+    <button class="hamburger" onclick="toggleMob()">
+      <svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 1h12M1 5.5h12M1 10h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Menu
+    </button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-badge"><div class="bdot"></div>Legal information · 15+ countries</div>
+    <h1>Legal answers,<br>in plain <em>English</em></h1>
+    <p>LEX is an AI legal information assistant. Ask about the law in 15+ countries and get clear, cited answers — in seconds, not days. Legal information, not advice.</p>
+    <div class="hero-btns">
+      <a href="#demo" class="btn-p">Ask a free question</a>
+      <a href="#pricing" class="btn-o">Plans from $12/mo</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="sn">15+</div><div class="sl">Countries</div></div>
+      <div><div class="sn">$12</div><div class="sl">per month</div></div>
+      <div><div class="sn">24/7</div><div class="sl">Available</div></div>
+    </div>
+    <div class="hero-disc">Legal information only · Not legal advice · Not a law firm</div>
+  </div>
+</section>
+
+<section class="app-sec" id="demo">
+  <div class="ey">Live demo</div>
+  <div class="st">Ask anything. Any country.</div>
+  <p class="ss">Select your jurisdiction and topic, then ask a question. LEX explains what the law says and cites relevant statutes.</p>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="exp-card">
+        <div class="exp-hd">
+          <div class="exp-av"><span>L</span></div>
+          <div>
+            <div class="exp-nm">LEX AI</div>
+            <div class="exp-cr">Legal information assistant<br>15+ jurisdictions covered</div>
+          </div>
+        </div>
+        <div class="exp-tags">
+          <span class="etag">Common Law</span><span class="etag">Civil Law</span>
+          <span class="etag">EU Law</span><span class="etag">Citations</span><span class="etag">Plain English</span>
+        </div>
+      </div>
+      <div class="cbox">
+        <div class="sbl">Jurisdiction</div>
+        <div class="cgrid" id="countryGrid"></div>
+      </div>
+      <div class="pbox">
+        <div class="sbl">Topic</div>
+        <div id="practiceList"></div>
+      </div>
+    </div>
+    <div class="chat-win">
+      <div class="chat-hd">
+        <div class="chl">
+          <div class="chav"><span>L</span></div>
+          <div>
+            <div class="chn">LEX AI</div>
+            <div class="chs"><div class="sdot"></div><span id="statusTxt">Select a jurisdiction to begin</span></div>
+          </div>
+        </div>
+        <div class="ctx"><span id="ctxFlag">🌍</span><span id="ctxLbl">Choose country</span></div>
+      </div>
+      <div class="chat-msgs" id="chatMsgs"></div>
+      <div class="sugg-area">
+        <div class="slbl">Suggested questions</div>
+        <div class="srow" id="suggRow"></div>
+      </div>
+      <div class="cin-area">
+        <textarea class="cin" id="userInput" placeholder="Select a jurisdiction above, then type your question…" rows="1"></textarea>
+        <button class="snd" id="sendBtn" onclick="send()" disabled>
+          <svg width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="M3 8.5h11M8.5 3l5.5 5.5-5.5 5.5" stroke="#1a2744" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ctry-sec">
+  <div class="ctry-in">
+    <div class="ey" style="text-align:center">Coverage</div>
+    <div class="st" style="text-align:center;font-size:clamp(20px,3vw,32px)">One subscription. Every major legal system.</div>
+    <div class="ctry-row">
+      <div class="cpill">🇺🇸 United States</div><div class="cpill">🇬🇧 United Kingdom</div>
+      <div class="cpill">🇪🇺 European Union</div><div class="cpill">🇦🇺 Australia</div>
+      <div class="cpill">🇨🇦 Canada</div><div class="cpill">🇸🇬 Singapore</div>
+      <div class="cpill">🇮🇳 India</div><div class="cpill">🇩🇪 Germany</div>
+      <div class="cpill">🇫🇷 France</div><div class="cpill">🇦🇪 UAE</div>
+      <div class="cpill">🇿🇦 South Africa</div><div class="cpill">🇯🇵 Japan</div>
+      <div class="cpill">🇧🇷 Brazil</div><div class="cpill">🇲🇽 Mexico</div>
+      <div class="cpill">🇳🇿 New Zealand</div>
+    </div>
+  </div>
+</section>
+
+<section class="feat-sec" id="features">
+  <div class="feat-in">
+    <div class="ey">What LEX does</div>
+    <div class="st">Clear legal information, fast</div>
+    <div class="feat-grid">
+      <div class="fc"><div class="fn">01</div><div class="ftitle">15+ jurisdictions</div><div class="fd">Covers US, UK, EU, Australia, Canada, Singapore, India and more. LEX identifies the relevant legal framework and cites applicable statutes.</div></div>
+      <div class="fc"><div class="fn">02</div><div class="ftitle">Real statute citations</div><div class="fd">Responses reference real laws — GDPR articles, US Code sections, UK Statutes — so you can verify the source yourself.</div></div>
+      <div class="fc"><div class="fn">03</div><div class="ftitle">Plain English answers</div><div class="fd">Legal language explained clearly and practically. Understand what the law says without needing a law degree.</div></div>
+      <div class="fc"><div class="fn">04</div><div class="ftitle">Multiple legal systems</div><div class="fd">Common Law (UK/US/AU), Civil Law (EU/DE/FR), Sharia-influenced systems, and hybrid jurisdictions like UAE and South Africa.</div></div>
+      <div class="fc"><div class="fn">05</div><div class="ftitle">Contract questions</div><div class="fd">Ask questions about contracts, leases, or notices. Understand key terms and what common clauses mean in plain language.</div></div>
+      <div class="fc"><div class="fn">06</div><div class="ftitle">Honest about limits</div><div class="fd">LEX clearly flags when your situation needs a licensed attorney. It provides information, not advice, and never pretends otherwise.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="price-sec" id="pricing">
+  <div class="ey">Pricing</div>
+  <div class="st">Simple, transparent pricing</div>
+  <p class="ss">Legal information should not cost hundreds per hour to access.</p>
+  <div class="pgrid">
+    <div class="pc">
+      <div class="ptier">Free</div>
+      <div class="pamt"><sup>$</sup>0</div>
+      <div class="pper">forever</div>
+      <div class="pdiv"></div>
+      <div class="pfeats">
+        <div class="pf"><span class="pck">✓</span>5 questions per month</div>
+        <div class="pf"><span class="pck">✓</span>3 countries</div>
+        <div class="pf"><span class="pck">✓</span>Legal information</div>
+        <div class="pf"><span class="pck">✓</span>Statute citations</div>
+      </div>
+      <a onclick="openAuth('signup')" class="pbtn2 po" style="cursor:pointer">Create free account</a>
+    </div>
+    <div class="pc feat">
+      <div class="ptier">Pro</div>
+      <div class="pamt"><sup>$</sup>12</div>
+      <div class="pper">per month</div>
+      <div class="pdiv"></div>
+      <div class="pfeats">
+        <div class="pf"><span class="pck">✓</span>Unlimited questions</div>
+        <div class="pf"><span class="pck">✓</span>All 15+ countries</div>
+        <div class="pf"><span class="pck">✓</span>Contract clause explainer</div>
+        <div class="pf"><span class="pck">✓</span>Document questions</div>
+        <div class="pf"><span class="pck">✓</span>Real statute citations</div>
+        <div class="pf"><span class="pck">✓</span>Letter drafting assistance</div>
+      </div>
+      <a href="https://buy.stripe.com/dRm28kg9ZdLPcJlcjXbAs00" class="pbtn2 pf2">Get started — $12/mo</a>
+    </div>
+    <div class="pc">
+      <div class="ptier">Business</div>
+      <div class="pamt"><sup>$</sup>29</div>
+      <div class="pper">per month</div>
+      <div class="pdiv"></div>
+      <div class="pfeats">
+        <div class="pf"><span class="pck">✓</span>Everything in Pro</div>
+        <div class="pf"><span class="pck">✓</span>5 team seats</div>
+        <div class="pf"><span class="pck">✓</span>Priority response</div>
+        <div class="pf"><span class="pck">✓</span>API access</div>
+        <div class="pf"><span class="pck">✓</span>Custom templates</div>
+        <div class="pf"><span class="pck">✓</span>Attorney referral directory</div>
+      </div>
+      <a href="https://buy.stripe.com/eVq3co9LBdLPdNp2JnbAs01" class="pbtn2 po">Get started — $29/mo</a>
+    </div>
+  </div>
+  <p style="text-align:center;margin-top:20px;font-size:11px;color:rgba(138,154,184,.4)">All plans provide legal information only — not legal advice. LEX is not a law firm.</p>
+</section>
+
+<section class="cta-sec">
+  <h2>Legal information for everyone</h2>
+  <p>Create a free account and start asking questions today. No credit card required.</p>
+  <div class="hero-btns">
+    <a onclick="openAuth('signup')" class="btn-p" style="cursor:pointer">Create free account</a>
+    <a href="#demo" class="btn-o">Try a question first</a>
+  </div>
+</section>
+
+<footer>
+  <div class="fi">
+    <div class="f-top">
+      <div class="fb">
+        <div class="fl">
+          <div class="fbm"><span>L</span></div>
+          <span class="fbn">LEX</span>
+        </div>
+        <p>AI legal information assistant. Not a law firm. Not legal advice.</p>
+      </div>
+      <div class="flinks">
+        <h4>Product</h4>
+        <a href="#demo">Try LEX</a>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div class="flinks">
+        <h4>Legal</h4>
+        <a onclick="openModal('tos')">Terms of Service</a>
+        <a onclick="openModal('privacy')">Privacy Policy</a>
+        <a onclick="openModal('disclaimer')">Disclaimer</a>
+      </div>
+      <div class="flinks">
+        <h4>Connect</h4>
+        <a href="https://instagram.com/lex.ai.legal" target="_blank">Instagram</a>
+        <a href="https://x.com/LexAI_Legal" target="_blank">X / Twitter</a>
+        <a href="mailto:hello@trylex.app">hello@trylex.app</a>
+      </div>
+    </div>
+    <div class="f-bot">
+      <span class="f-copy">© 2025 LEX AI. All rights reserved.</span>
+      <span class="f-disc">LEX provides legal information only, not legal advice. Use of LEX does not create an attorney-client relationship. Always consult a qualified, licensed attorney for advice about your specific situation.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- LEGAL MODAL -->
+<div class="modal-overlay" id="legalModal" onclick="handleOvClick(event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <h3>Legal Documents</h3>
+      <button class="modal-x" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="mtab active" id="tab-tos" onclick="switchTab('tos')">Terms of Service</button>
+      <button class="mtab" id="tab-privacy" onclick="switchTab('privacy')">Privacy Policy</button>
+      <button class="mtab" id="tab-disclaimer" onclick="switchTab('disclaimer')">Disclaimer</button>
+    </div>
+    <div class="modal-body">
+      <div class="tc active" id="tc-tos">
+        <div class="meta-row">
+          <div class="mi"><div class="ml">Effective</div><div class="mv">[INSERT DATE]</div></div>
+          <div class="mi"><div class="ml">Company</div><div class="mv">[YOUR COMPANY NAME]</div></div>
+          <div class="mi"><div class="ml">Contact</div><div class="mv">legal@trylex.app</div></div>
+        </div>
+        <div class="warn-box">⚠️ LEX provides legal information only — not legal advice. Using LEX does not create an attorney-client relationship.</div>
+        <h2>1. Acceptance of Terms</h2><p>By accessing or using the LEX application or website (the "Service"), you agree to these Terms. You must be at least 18 years old to use the Service.</p>
+        <h2>2. What LEX Is</h2><p>LEX is an AI-powered legal information tool operated by <strong>[YOUR COMPANY NAME]</strong>. LEX uses artificial intelligence and responses may not reflect the most current laws.</p>
+        <h2>3. Legal Information — Not Legal Advice</h2>
+        <h3>3.1 No Attorney-Client Relationship</h3><p>LEX provides <strong>legal information only</strong>, not legal advice. Use of LEX does not create any attorney-client or professional relationship.</p>
+        <h3>3.2 Not a Substitute for a Lawyer</h3><p>For any matter with significant legal consequences, consult a licensed attorney in your jurisdiction.</p>
+        <h3>3.3 Accuracy</h3><p>We make no representations that information provided by LEX is accurate, complete, or current. Always verify legal information independently before relying on it.</p>
+        <h2>4. Subscriptions and Payments</h2><p>Free ($0), Pro ($12/month), and Business ($29/month) plans are available. We offer a 7-day refund on your first paid subscription. Cancellations take effect at end of billing period. Prices may change with 30 days notice.</p>
+        <h2>5. Acceptable Use</h2><p>You may not: provide legal advice to third parties using LEX outputs; engage in unauthorised practice of law; circumvent safety features; use the Service for illegal activity; or scrape or resell the Service without written consent.</p>
+        <h2>6. Intellectual Property</h2><p>The Service is owned by the Company. You own content you submit. We do not use your queries to train AI models without explicit consent.</p>
+        <h2>7. Disclaimers and Liability</h2><p>THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTY. TO THE MAXIMUM EXTENT PERMITTED BY LAW, OUR LIABILITY IS LIMITED TO FEES PAID IN THE PRECEDING 12 MONTHS OR $100 USD. Nothing limits liability for fraud, negligence causing death or injury, or liability that cannot be excluded by applicable law.</p>
+        <h2>8. Governing Law</h2><p>Governed by the laws of <strong>[YOUR STATE/COUNTRY]</strong>. EU/UK users retain all statutory consumer rights.</p>
+        <h2>9. Changes</h2><p>Material changes notified by email and in-app 14 days before taking effect.</p>
+        <h2>10. Contact</h2><p>[YOUR COMPANY NAME] · [Address] · legal@trylex.app</p>
+      </div>
+      <div class="tc" id="tc-privacy">
+        <div class="meta-row">
+          <div class="mi"><div class="ml">Effective</div><div class="mv">[INSERT DATE]</div></div>
+          <div class="mi"><div class="ml">Scope</div><div class="mv">All LEX users globally</div></div>
+          <div class="mi"><div class="ml">Contact</div><div class="mv">privacy@trylex.app</div></div>
+        </div>
+        <div class="warn-box">We collect minimum data needed to run LEX. We do not sell your data. We do not use your queries to train AI models without consent.</div>
+        <h2>1. What We Collect</h2>
+        <h3>Information you provide</h3><ul><li>Account: name, email, password</li><li>Payment: processed by Stripe — we never store card numbers</li><li>Preferences: jurisdiction, language, settings</li><li>Queries: questions you ask and conversation history</li></ul>
+        <h3>Collected automatically</h3><ul><li>Usage data: features used, session duration</li><li>Device: type, OS, app version</li><li>Logs: IP address, access times, crash reports</li></ul>
+        <h2>2. How We Use Your Data</h2><ul><li>Provide and improve the Service</li><li>Process payments and send receipts</li><li>Respond to support requests</li><li>Detect fraud and security incidents</li><li>Comply with legal obligations</li><li>Marketing with your consent (opt out any time)</li></ul>
+        <p><strong>AI Training:</strong> We do not use your queries to train AI models without your explicit consent.</p>
+        <h2>3. Legal Basis (GDPR)</h2><ul><li>Contractual necessity: delivering the Service</li><li>Legitimate interests: improving the Service, security</li><li>Legal obligation: compliance with applicable laws</li><li>Consent: marketing, optional analytics</li></ul>
+        <h2>4. Data Sharing</h2><p>We do not sell your data. We share only with: AI providers under DPAs; Stripe for payments; cloud providers under DPAs; legal authorities when required by law.</p>
+        <h2>5. Retention</h2><ul><li>Account data: while active + 30 days after deletion</li><li>Conversation history: 12 months (deletable by you)</li><li>Payment records: 7 years (legal requirement)</li></ul>
+        <h2>6. Your Rights</h2><p>Access, correction, deletion, portability, restriction, objection, and consent withdrawal. Contact privacy@trylex.app within 30 days. EEA/UK users may complain to their national data protection authority.</p>
+        <h2>7. International Transfers</h2><p>Data may be processed in countries including the US. We use Standard Contractual Clauses for EEA/UK transfers.</p>
+        <h2>8. Children</h2><p>LEX is not for users under 18. Contact privacy@trylex.app if you believe we hold a minor's data.</p>
+        <h2>9. California (CCPA)</h2><p>California residents have rights to know, delete, correct data, and opt out of sale. We do not sell personal data. Contact privacy@trylex.app.</p>
+        <h2>10. Contact</h2><p>[YOUR COMPANY NAME] · [Address] · privacy@trylex.app</p>
+      </div>
+      <div class="tc" id="tc-disclaimer">
+        <div class="warn-box" style="font-size:13px;font-weight:500">LEX provides legal information only — not legal advice. Please read this disclaimer carefully before using the Service.</div>
+        <h2>What LEX Is</h2><p>LEX is an AI-powered legal information tool designed to help users understand general legal concepts and locate relevant laws across different countries.</p>
+        <h2>What LEX Is Not</h2><ul><li>LEX is <strong>not a law firm</strong></li><li>LEX is <strong>not a licensed attorney or solicitor</strong></li><li>LEX does <strong>not provide legal advice</strong></li><li>LEX does <strong>not create an attorney-client relationship</strong></li><li>LEX is <strong>not a substitute for professional legal counsel</strong></li></ul>
+        <h2>Limitations of AI-Generated Information</h2><ul><li>May not be accurate, complete, or up to date</li><li>May not reflect recent changes in law</li><li>May not apply to your specific situation</li><li>Should always be independently verified before being relied upon</li></ul>
+        <h2>When to Consult a Licensed Attorney</h2><p>Always consult a qualified attorney for: criminal charges; immigration applications; family law matters; property transactions; significant commercial contracts; any matter with major financial or personal consequences.</p>
+        <h2>No Reliance</h2><p>You should not act based solely on information from LEX. The Company disclaims all liability arising from any reliance on information provided through the Service.</p>
+        <h2>Emergency Situations</h2><p>If you are in immediate danger, contact emergency services: 911 (US) · 999 (UK) · 112 (EU). Domestic abuse support: US 1-800-799-7233 · UK 0808 2000 247 · AU 1800 737 732.</p>
+        <h2>Contact</h2><p>Questions: legal@trylex.app</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="auth-modal">
+    <button onclick="closeAuthModal()" style="position:absolute;top:12px;right:12px;background:transparent;border:1px solid rgba(138,154,184,.2);border-radius:6px;width:28px;height:28px;color:var(--steel);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">✕</button>
+    <div class="auth-logo">
+      <div class="auth-lm"><span>L</span></div>
+      <span style="font-family:'Playfair Display',serif;font-size:20px;color:var(--parchment);font-weight:700">LEX</span>
+    </div>
+    <div class="auth-title">Welcome to LEX</div>
+    <div class="auth-sub">Legal information across 15+ countries</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="atab-signin" onclick="switchAuthTab('signin')">Sign in</button>
+      <button class="auth-tab" id="atab-signup" onclick="switchAuthTab('signup')">Create account</button>
+    </div>
+    <div id="auth-signin">
+      <input class="auth-inp" id="si-email" type="email" placeholder="Email address" autocomplete="email">
+      <input class="auth-inp" id="si-pass" type="password" placeholder="Password" autocomplete="current-password">
+      <button class="auth-btn" id="si-btn" onclick="doSignIn()">Sign in</button>
+      <div class="auth-switch">No account? <span onclick="switchAuthTab('signup')">Create one free</span></div>
+    </div>
+    <div id="auth-signup" style="display:none">
+      <input class="auth-inp" id="su-email" type="email" placeholder="Email address" autocomplete="email">
+      <input class="auth-inp" id="su-pass" type="password" placeholder="Password (min 6 characters)" autocomplete="new-password">
+      <button class="auth-btn" id="su-btn" onclick="doSignUp()">Create account</button>
+      <div class="auth-switch">Have an account? <span onclick="switchAuthTab('signin')">Sign in</span></div>
+    </div>
+    <div class="auth-err" id="authErr"></div>
+    <p style="text-align:center;margin-top:14px;font-size:11px;color:rgba(138,154,184,.38)">Free plan · 5 questions/month · No credit card required</p>
+  </div>
+</div>
+
+<script>
+var COUNTRIES=[
+  {code:'US',flag:'🇺🇸',name:'United States',sys:'Common Law',legal:'You are a legal information assistant covering US federal and state law. Cite specific US Code sections, CFR, and state statutes. Reference relevant Supreme Court cases. Note when answers differ significantly by state.'},
+  {code:'GB',flag:'🇬🇧',name:'United Kingdom',sys:'Common Law',legal:'You are a legal information assistant covering English and Welsh law (noting Scots and NI differences where relevant). Cite UK Statutes and landmark cases. Note post-Brexit changes where relevant.'},
+  {code:'EU',flag:'🇪🇺',name:'European Union',sys:'Civil / EU Law',legal:'You are a legal information assistant covering EU law. Cite TFEU/TEU articles, EU Regulations, EU Directives, and ECJ/CJEU case law. Note member state variation.'},
+  {code:'AU',flag:'🇦🇺',name:'Australia',sys:'Common Law',legal:'You are a legal information assistant covering Australian law. Cite Commonwealth Acts, state legislation, and High Court decisions. Note key differences between NSW, VIC, QLD, WA, SA and ACT.'},
+  {code:'CA',flag:'🇨🇦',name:'Canada',sys:'Common Law / Civil',legal:'You are a legal information assistant covering Canadian federal and provincial law. Distinguish common law provinces from Quebec civil law. Cite Canada Statutes and Supreme Court of Canada decisions.'},
+  {code:'SG',flag:'🇸🇬',name:'Singapore',sys:'Common Law',legal:'You are a legal information assistant covering Singapore law. Cite Singapore Statutes Online, Acts of Parliament, and Court of Appeal decisions.'},
+  {code:'IN',flag:'🇮🇳',name:'India',sys:'Common Law',legal:'You are a legal information assistant covering Indian law. Cite the Constitution, Acts of Parliament, and Supreme Court judgments. Note personal law variations where relevant.'},
+  {code:'DE',flag:'🇩🇪',name:'Germany',sys:'Civil Law',legal:'You are a legal information assistant covering German law. Cite the BGB by paragraph, HGB, Grundgesetz, and federal statutes. Reference BGH decisions. Note EU law overlay.'},
+  {code:'FR',flag:'🇫🇷',name:'France',sys:'Civil Law',legal:'You are a legal information assistant covering French law. Cite the Code civil, Code du travail, Code penal by article. Reference Cour de cassation decisions. Note EU law overlay.'},
+  {code:'AE',flag:'🇦🇪',name:'UAE',sys:'Civil / Sharia',legal:'You are a legal information assistant covering UAE law. Cite UAE Federal Laws, DIFC and ADGM regulations. Note Sharia law influence on personal status. Distinguish onshore vs free zone jurisdiction.'},
+  {code:'ZA',flag:'🇿🇦',name:'South Africa',sys:'Mixed',legal:'You are a legal information assistant covering South African law. Cite the Constitution, Acts of Parliament, and Constitutional Court decisions.'},
+  {code:'JP',flag:'🇯🇵',name:'Japan',sys:'Civil Law',legal:'You are a legal information assistant covering Japanese law. Cite the Civil Code by article and relevant statutes. Reference Supreme Court decisions.'},
+  {code:'BR',flag:'🇧🇷',name:'Brazil',sys:'Civil Law',legal:'You are a legal information assistant covering Brazilian law. Cite the Constituicao Federal, Codigo Civil, CLT, and federal legislation. Reference STF and STJ decisions.'},
+  {code:'MX',flag:'🇲🇽',name:'Mexico',sys:'Civil Law',legal:'You are a legal information assistant covering Mexican law. Cite the Constitucion Politica, Codigo Civil Federal, and federal statutes. Reference SCJN decisions.'},
+  {code:'NZ',flag:'🇳🇿',name:'New Zealand',sys:'Common Law',legal:'You are a legal information assistant covering New Zealand law. Cite NZ Acts, regulations, and Supreme Court decisions. Note Treaty of Waitangi considerations where relevant.'}
+];
+
+var PRACTICES=[
+  {id:'tenancy',icon:'🏠',title:'Tenancy & Property',sub:'Leases, deposits, evictions'},
+  {id:'employment',icon:'💼',title:'Employment',sub:'Dismissal, NDAs, wages'},
+  {id:'contract',icon:'📄',title:'Contracts',sub:'Terms, clauses, disputes'},
+  {id:'business',icon:'🏢',title:'Business',sub:'Incorporation, compliance'},
+  {id:'immigration',icon:'✈️',title:'Immigration',sub:'Visas, residency'},
+  {id:'family',icon:'👨‍👩‍👧',title:'Family Law',sub:'Divorce, custody'},
+  {id:'ip',icon:'💡',title:'Intellectual Property',sub:'Trademarks, copyright'},
+  {id:'criminal',icon:'⚖️',title:'Criminal',sub:'Rights, process'},
+  {id:'data',icon:'🔒',title:'Data & Privacy',sub:'GDPR, CCPA'},
+  {id:'smallclaims',icon:'🗂️',title:'Small Claims',sub:'How to file & prepare'}
+];
+
+var SUGGS={
+  tenancy:['Can my landlord withhold my deposit?','What notice is required before eviction?','My landlord entered without permission'],
+  employment:['Was my dismissal unfair?','Is my non-compete clause enforceable?','My employer has not paid me — what can I do?'],
+  contract:['What makes a contract unenforceable?','Can I cancel a contract I just signed?','What is a limitation of liability clause?'],
+  business:['How do I incorporate a company?','What are a directors legal duties?','Do I need a shareholders agreement?'],
+  immigration:['What visa do I need to work here?','How do I apply for permanent residency?','Can my family join me on my visa?'],
+  family:['How is property divided in divorce?','How is child custody determined?','What is a prenuptial agreement?'],
+  ip:['How do I protect my app idea?','Someone copied my brand — what can I do?','What does copyright protect?'],
+  criminal:['What are my rights if arrested?','When must I be given access to a lawyer?','Should I speak to police without a solicitor?'],
+  data:['Does GDPR apply to my business?','What is a lawful basis for processing data?','What must a privacy policy include?'],
+  smallclaims:['What is the maximum I can claim?','What evidence do I need?','What happens at a small claims hearing?']
+};
+
+var country=null, practice='tenancy', chatHistory=[], loading=false, freeCount=0;
+var sb=null, currentUser=null;
+
+function init(){
+  renderC(); renderP(); renderS();
+  addMsg('ai','Welcome to <strong style="color:var(--gold)">LEX</strong> — a legal information assistant covering 15+ countries.<br><br>Select your <strong style="color:var(--gold)">jurisdiction</strong> and <strong style="color:var(--gold)">topic</strong> on the left, then ask a question.<br><br><em style="color:rgba(138,154,184,.55);font-size:12px">Legal information only · Not legal advice</em>');
+}
+
+function renderC(){
+  var html='';
+  for(var i=0;i<COUNTRIES.length;i++){
+    var c=COUNTRIES[i];
+    html+='<button class="cbtn'+(country&&country.code===c.code?' active':'')+'" onclick="selC(\''+c.code+'\')"><span class="cflag">'+c.flag+'</span><span class="cname">'+c.name+'</span></button>';
+  }
+  document.getElementById('countryGrid').innerHTML=html;
+}
+
+function renderP(){
+  var html='';
+  for(var i=0;i<PRACTICES.length;i++){
+    var p=PRACTICES[i];
+    html+='<button class="pbtn'+(practice===p.id?' active':'')+'" onclick="selP(\''+p.id+'\')"><span class="pico">'+p.icon+'</span><div><div class="pt">'+p.title+'</div><div class="ps">'+p.sub+'</div></div></button>';
+  }
+  document.getElementById('practiceList').innerHTML=html;
+}
+
+function renderS(){
+  var s=SUGGS[practice]||[];
+  var html='';
+  for(var i=0;i<s.length;i++) html+='<button class="sbtn" onclick="useSugg(this.textContent)">'+s[i]+'</button>';
+  document.getElementById('suggRow').innerHTML=html;
+}
+
+function selC(code){
+  for(var i=0;i<COUNTRIES.length;i++){if(COUNTRIES[i].code===code){country=COUNTRIES[i];break;}}
+  renderC();
+  document.getElementById('ctxFlag').textContent=country.flag;
+  document.getElementById('ctxLbl').textContent=country.name;
+  document.getElementById('statusTxt').textContent=country.name+' · '+getP()+' · Ready';
+  document.getElementById('sendBtn').disabled=false;
+  document.getElementById('userInput').disabled=false;
+  document.querySelector('.sugg-area').style.display='';
+  document.getElementById('userInput').placeholder='Ask about '+getP().toLowerCase()+' law in '+country.name+'...';
+  chatHistory=[]; freeCount=0;
+  var pw=document.getElementById('paywallWrap');
+  if(pw) pw.remove();
+  addMsg('ai',country.flag+' Switched to <strong style="color:var(--gold)">'+country.name+'</strong> ('+country.sys+').<br><br>Ask me anything about <strong style="color:var(--gold)">'+getP()+'</strong> law in '+country.name+' and I\'ll explain what the law says and cite relevant sources.<br><br><em style="color:rgba(138,154,184,.5);font-size:11px">Legal information only — not legal advice.</em>');
+}
+
+function selP(id){
+  practice=id; renderP(); renderS();
+  if(country){
+    document.getElementById('statusTxt').textContent=country.name+' · '+getP()+' · Ready';
+    document.getElementById('userInput').placeholder='Ask about '+getP().toLowerCase()+' law in '+country.name+'...';
+  }
+}
+
+function getP(){
+  for(var i=0;i<PRACTICES.length;i++){if(PRACTICES[i].id===practice)return PRACTICES[i].title;}
+  return 'Legal';
+}
+
+function useSugg(t){ document.getElementById('userInput').value=t; send(); }
+
+function scrollD(){ var e=document.getElementById('chatMsgs'); e.scrollTop=e.scrollHeight; }
+
+function addMsg(role,html,disc){
+  var a=document.getElementById('chatMsgs');
+  var d=document.createElement('div');
+  d.className='msg msg-'+role;
+  var lbl=role==='ai'?(country?country.flag+' ':'')+'LEX AI':'You';
+  d.innerHTML='<div class="mlbl">'+lbl+'</div><div class="mbub">'+html+'</div>'+(disc?'<div class="mdisc">'+esc(disc)+'</div>':'');
+  a.appendChild(d); scrollD();
+}
+
+function showT(){
+  var a=document.getElementById('chatMsgs');
+  var id='t'+Date.now();
+  var d=document.createElement('div');
+  d.className='msg msg-ai twrap'; d.id=id;
+  d.innerHTML='<div class="mlbl">'+(country?country.flag+' ':'')+'LEX AI is looking that up...</div><div class="tbub"><div class="td"></div><div class="td"></div><div class="td"></div></div>';
+  a.appendChild(d); scrollD(); return id;
+}
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function fmt(t){
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong style="color:var(--parchment)">$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^#{1,3}\s+(.+)$/gm,'<strong style="color:var(--gold);display:block;margin-top:10px">$1</strong>')
+    .replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+}
+
+function showPaywall(){
+  var existing=document.getElementById('paywallWrap');
+  if(existing) existing.remove();
+  document.getElementById('userInput').disabled=true;
+  document.getElementById('sendBtn').disabled=true;
+  document.getElementById('userInput').placeholder='Upgrade to Pro to continue...';
+  document.querySelector('.sugg-area').style.display='none';
+  var cinArea=document.querySelector('.cin-area');
+  var pw=document.createElement('div');
+  pw.className='paywall-wrap'; pw.id='paywallWrap';
+  pw.innerHTML='<div class="paywall"><div class="paywall-icon">⚖️</div><div class="paywall-title">You\'ve used your 2 free questions</div><div class="paywall-sub">Upgrade to Pro for unlimited questions across all 15+ countries — $12/month.</div><div class="paywall-btns"><a href="https://buy.stripe.com/dRm28kg9ZdLPcJlcjXbAs00" class="paywall-pro">Upgrade to Pro — $12/mo</a><button class="paywall-free" onclick="openAuth(\'signup\')">Create free account instead</button></div><div class="paywall-note">Free plan · 5 questions/month · No credit card required</div></div>';
+  cinArea.parentNode.insertBefore(pw,cinArea);
+  pw.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+async function send(){
+  if(loading||!country) return;
+  if(!currentUser && freeCount>=2){showPaywall();return;}
+  var inp=document.getElementById('userInput');
+  var txt=inp.value.trim();
+  if(!txt) return;
+  inp.value=''; inp.style.height='auto';
+  loading=true; document.getElementById('sendBtn').disabled=true;
+  addMsg('user',esc(txt));
+  chatHistory.push({role:'user',content:txt});
+  var tid=showT();
+  var prac=null;
+  for(var i=0;i<PRACTICES.length;i++){if(PRACTICES[i].id===practice){prac=PRACTICES[i];break;}}
+  var sys='You are LEX, an AI legal information assistant. Your role is to help people understand the law clearly.\n\nYou are covering '+prac.title+' law in '+country.name+' ('+country.sys+' legal system).\n\n'+country.legal+'\n\nHow to respond:\n1. Explain what the law says clearly and directly\n2. Cite specific statutes, acts, or notable cases with real references the person can verify\n3. Explain what this means practically\n4. Note important exceptions or sub-jurisdictional variations\n5. Suggest a practical next step where helpful\n\nRules:\n- You provide legal INFORMATION, not legal ADVICE\n- Be clear this is general information that may not apply to their specific situation\n- For significant matters tell them to consult a licensed attorney in their jurisdiction\n- Only cite sources you are confident are real\n- Be helpful and direct\n\nClose your response with a brief note that this is general legal information and they should consult a licensed '+country.name+' attorney for advice on their specific situation.';
+  try{
+    var res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatHistory,system:sys})});
+    var el=document.getElementById(tid); if(el) el.remove();
+    if(!res.ok) throw new Error('API error');
+    var data=await res.json();
+    var reply=data.reply||'Unable to generate response.';
+    chatHistory.push({role:'assistant',content:reply});
+    var disc=null, main=reply;
+    var dm=reply.match(/\n\n?((?:Note|Please note|Important|Reminder|Disclaimer)[^]*$)/i);
+    if(dm){ main=reply.slice(0,reply.length-dm[0].length); disc=dm[1].replace(/^\*+|\*+$/g,''); }
+    addMsg('ai',fmt(main),disc);
+    freeCount++;
+    if(!currentUser && freeCount>=2) showPaywall();
+  }catch(err){
+    var el2=document.getElementById(tid); if(el2) el2.remove();
+    addMsg('ai','Connection error — please try again.');
+  }
+  loading=false;
+  if(!document.getElementById('paywallWrap')) document.getElementById('sendBtn').disabled=false;
+}
+
+document.getElementById('userInput').addEventListener('input',function(){
+  this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,96)+'px';
+});
+document.getElementById('userInput').addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}
+});
+
+function toggleMob(){ document.getElementById('mobMenu').classList.toggle('open'); }
+function closeMob(){ document.getElementById('mobMenu').classList.remove('open'); }
+document.addEventListener('click',function(e){
+  if(!e.target.closest('nav')&&!e.target.closest('.mob-menu')) closeMob();
+});
+
+function openModal(tab){
+  document.getElementById('legalModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  switchTab(tab||'tos');
+}
+function closeModal(){ document.getElementById('legalModal').classList.remove('open'); document.body.style.overflow=''; }
+function handleOvClick(e){ if(e.target===document.getElementById('legalModal')) closeModal(); }
+function switchTab(tab){
+  document.querySelectorAll('.mtab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.tc').forEach(function(c){c.classList.remove('active');});
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('tc-'+tab).classList.add('active');
+}
+
+function openAuth(tab){
+  document.getElementById('authModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  switchAuthTab(tab==='signup'?'signup':'signin');
+  document.getElementById('authErr').textContent='';
+  document.getElementById('authErr').style.color='#f87171';
+}
+function closeAuthModal(){ document.getElementById('authModal').classList.remove('open'); document.body.style.overflow=''; }
+function switchAuthTab(tab){
+  document.querySelectorAll('.auth-tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('atab-'+tab).classList.add('active');
+  document.getElementById('auth-signup').style.display=tab==='signup'?'block':'none';
+  document.getElementById('auth-signin').style.display=tab==='signin'?'block':'none';
+  document.getElementById('authErr').textContent='';
+}
+document.addEventListener('click',function(e){ if(e.target&&e.target.id==='authModal') closeAuthModal(); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'){closeModal();closeAuthModal();} });
+
+var SUPABASE_URL='https://rbaosfsppubbqixckrda.supabase.co';
+var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJiYW9zZnNwcHViYnFpeGNrcmRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MjYwNTksImV4cCI6MjA5MTQwMjA1OX0.oxqWh6lCXVPFHL2OW3LvlJNJOr4ROp5p_VQHf8gT95U';
+
+function initAuth(){
+  try{
+    sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    sb.auth.getSession().then(function(res){
+      if(res.data&&res.data.session&&res.data.session.user){ currentUser=res.data.session.user; updateNavUser(currentUser); }
+    });
+    sb.auth.onAuthStateChange(function(event,session){
+      currentUser=session&&session.user?session.user:null;
+      if(currentUser){ updateNavUser(currentUser); closeAuthModal(); }
+      else{ updateNavGuest(); }
+    });
+  }catch(e){ console.log('Auth init error',e); }
+}
+
+function updateNavUser(user){
+  document.getElementById('navAuth').innerHTML='<div class="nav-user"><span class="nav-user-email">'+user.email+'</span><button class="nav-signout" onclick="signOut()">Sign out</button></div>';
+}
+function updateNavGuest(){
+  document.getElementById('navAuth').innerHTML='<a onclick="openAuth()" class="nav-cta" style="cursor:pointer">Get started</a>';
+}
+function signOut(){ if(sb) sb.auth.signOut(); }
+
+function doSignUp(){
+  if(!sb){ document.getElementById('authErr').textContent='Auth not configured.'; return; }
+  var email=document.getElementById('su-email').value.trim();
+  var pass=document.getElementById('su-pass').value;
+  var btn=document.getElementById('su-btn');
+  if(!email||!pass){ document.getElementById('authErr').textContent='Please fill in all fields.'; return; }
+  if(pass.length<6){ document.getElementById('authErr').textContent='Password must be at least 6 characters.'; return; }
+  btn.disabled=true; btn.textContent='Creating account...';
+  sb.auth.signUp({email:email,password:pass}).then(function(res){
+    btn.disabled=false; btn.textContent='Create account';
+    if(res.error){ document.getElementById('authErr').textContent=res.error.message; }
+    else{ document.getElementById('authErr').style.color='var(--success)'; document.getElementById('authErr').textContent='Check your email to confirm your account.'; }
+  });
+}
+
+function doSignIn(){
+  if(!sb){ document.getElementById('authErr').textContent='Auth not configured.'; return; }
+  var email=document.getElementById('si-email').value.trim();
+  var pass=document.getElementById('si-pass').value;
+  var btn=document.getElementById('si-btn');
+  if(!email||!pass){ document.getElementById('authErr').textContent='Please fill in all fields.'; return; }
+  btn.disabled=true; btn.textContent='Signing in...';
+  sb.auth.signInWithPassword({email:email,password:pass}).then(function(res){
+    btn.disabled=false; btn.textContent='Sign in';
+    if(res.error){ document.getElementById('authErr').textContent=res.error.message; }
+  });
+}
+
+init();
+initAuth();
+</script>
+</body>
+</html>
